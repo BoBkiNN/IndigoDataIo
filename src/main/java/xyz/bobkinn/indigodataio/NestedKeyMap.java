@@ -14,7 +14,16 @@ public final class NestedKeyMap {
     private final Map<String, Object> map;
 
     public NestedKeyMap(Map<String, Object> map) {
-        this.map = map;
+        this.map = Objects.requireNonNull(map, "map");
+    }
+
+    /**
+     * Creates shallow copy that means that changes will appear in both Map(s)
+     * @param map other nested key map
+     */
+    public NestedKeyMap(NestedKeyMap map) {
+        Objects.requireNonNull(map, "map");
+        this.map = map.map();
     }
 
     public NestedKeyMap() {

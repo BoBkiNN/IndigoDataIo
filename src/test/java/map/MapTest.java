@@ -12,6 +12,9 @@ public class MapTest{
         var map = new NestedKeyMap();
         map.put("ls", List.of(Map.of("k", 1), Map.of("k2", 2)));
         System.out.println(map);
+        var maps = map.getMapList("ls");
+        var mm = maps.get(0);
+        System.out.println(mm);
         var sections = map.getSections("ls");
         System.out.println(sections);
     }
