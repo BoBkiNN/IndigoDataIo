@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Class for storing objects by dot-separated string key
@@ -115,37 +114,26 @@ public final class NestedKeyMap {
 
     public Float getFloat(String key, Float def) {
         var v = getObject(key);
-        if (v instanceof Long r) return r.floatValue();
-        if (v instanceof Double r) return r.floatValue();
-        if (v instanceof Float r) return r;
-        if (v instanceof Integer r) return r.floatValue();
+        if (v instanceof Number n) return n.floatValue();
         return def;
     }
 
+    @Contract("_, _ -> _")
     public Double getDouble(String key, Double def) {
         var v = getObject(key);
-        if (v instanceof Long r) return r.doubleValue();
-        if (v instanceof Double r) return r;
-        if (v instanceof Float r) return r.doubleValue();
-        if (v instanceof Integer r) return r.doubleValue();
+        if (v instanceof Number n) return n.doubleValue();
         return def;
     }
 
     public Integer getInt(String key, Integer def) {
         var v = getObject(key);
-        if (v instanceof Long r) return r.intValue();
-        if (v instanceof Double r) return r.intValue();
-        if (v instanceof Float r) return r.intValue();
-        if (v instanceof Integer r) return r;
+        if (v instanceof Number n) return n.intValue();
         return def;
     }
 
     public Long getLong(String key, Long def) {
         var v = getObject(key);
-        if (v instanceof Long r) return r;
-        if (v instanceof Double r) return r.longValue();
-        if (v instanceof Float r) return r.longValue();
-        if (v instanceof Integer r) return r.longValue();
+        if (v instanceof Number n) return n.longValue();
         return def;
     }
 
@@ -155,6 +143,10 @@ public final class NestedKeyMap {
 
     public Integer getInt(String key) {
         return getInt(key, null);
+    }
+
+    public Double getDouble(String key) {
+        return getDouble(key, null);
     }
 
     public Map<String, Object> getMap(String key, Map<String, Object> def) {
@@ -219,7 +211,7 @@ public final class NestedKeyMap {
     public List<NestedKeyMap> getSections(String key, List<NestedKeyMap> def){
         var ls = getMapList(key);
         if (ls == null) return def;
-        return ls.stream().map(NestedKeyMap::new).collect(Collectors.toList());
+        return ls.stream().map(NestedKeyMap::new).toList();
     }
 
     public List<NestedKeyMap> getSections(String key){
