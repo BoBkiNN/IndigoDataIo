@@ -17,6 +17,13 @@ public class MapTest{
     }
 
     @Test
+    public void testIntList(){
+        var map = new NestedKeyMap();
+        map.put("l", new int[]{3, 3, 3});
+        System.out.println(map.getIntList("l", null));
+    }
+
+    @Test
     public void testNums(){
         var map = new NestedKeyMap();
         map.put("s", (short) 1);

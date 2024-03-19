@@ -188,7 +188,20 @@ public final class NestedKeyMap {
         var v = getObject(key);
         if (v == null) return def;
         try {
-            return ((List<Number>) v).stream().map(Number::intValue).toList();
+            if (v instanceof List<?> l){
+                return ((List<Number>) l).stream().map(Number::intValue).toList();
+            } else if (v instanceof int[] l) {
+                return Arrays.stream(l).boxed().toList();
+            } else if (v instanceof float[] l) {
+                return NumberUtil.floatToStream(l).map(Number::intValue).toList();
+            } else if (v instanceof short[] l) {
+                return NumberUtil.shortToStream(l).map(Number::intValue).toList();
+            } else if (v instanceof double[] l) {
+                return Arrays.stream(l).boxed().map(Number::intValue).toList();
+            } else if (v instanceof long[] l) {
+                return Arrays.stream(l).boxed().map(Number::intValue).toList();
+            }
+            return def;
         } catch (ClassCastException ignored){
             return def;
         }
@@ -211,7 +224,9 @@ public final class NestedKeyMap {
     public List<NestedKeyMap> getSections(String key, List<NestedKeyMap> def){
         var ls = getMapList(key);
         if (ls == null) return def;
-        return ls.stream().map(NestedKeyMap::new).toList();
+        var ret = new ArrayList<NestedKeyMap>(ls.size());
+        for (var map : ls) ret.add(new NestedKeyMap(map));
+        return ret;
     }
 
     public List<NestedKeyMap> getSections(String key){
