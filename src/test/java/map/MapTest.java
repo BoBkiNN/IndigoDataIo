@@ -1,12 +1,37 @@
 package map;
 
 import org.junit.Test;
+import xyz.bobkinn.indigodataio.MapBuilder;
 import xyz.bobkinn.indigodataio.NestedKeyMap;
 
 import java.util.List;
 import java.util.Map;
 
-public class MapTest{
+public class MapTest {
+
+    @Test
+    public void builderTest(){
+        var b = MapBuilder.newBuilder()
+                .put("k1", 11)
+                .down("o")
+                    .put("k2", 22)
+                    .down("o2")
+                        .put("k3", 33)
+                        .up()
+                    .put("k4", 23)
+                .up()
+                .put("k5", 12)
+                .build();
+        System.out.println(b);
+        var b2 = MapBuilder.newBuilder()
+                .put("k1", 11)
+                .down("o")
+                .put("k2", 22)
+                .down("o2")
+                .build();
+        System.out.println(b2);
+    }
+
     @Test
     public void testSectionList(){
         var map = new NestedKeyMap();
