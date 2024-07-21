@@ -51,7 +51,7 @@ public final class NestedKeyMap {
     private Map<String, Object> resolveMap(@NotNull String key, boolean create) {
         var ret = map;
         for (String k : key.split("\\.")) {
-            if (k.equals("")) return ret;
+            if (k.isEmpty()) return ret;
             if (ret == null) return null;
             Object o;
             if (ret.containsKey(k)) {
@@ -80,8 +80,21 @@ public final class NestedKeyMap {
         return Pair.of(l, r);
     }
 
+    /**
+     * Remove value from map
+     * @param key key
+     * @return removed object or null if not found
+     */
+    public @Nullable Object remove(@NotNull String key){
+        if (key.isEmpty()) throw new IllegalArgumentException("Empty key '"+key+"'");
+        var keys = extractMapKey(key);
+        var map = resolveMap(keys.getLeft());
+        if (map == null) return null;
+        return map.remove(keys.getRight());
+    }
+
     public Object getObject(@NotNull String key) {
-        if (key.equals("")) return map;
+        if (key.isEmpty()) return map;
         var keys = extractMapKey(key);
         var map = resolveMap(keys.getLeft());
         if (map == null) return null;
@@ -90,7 +103,7 @@ public final class NestedKeyMap {
 
     @NotNull
     public Set<String> getKeys(@NotNull String key){
-        if (key.equals("")) return map.keySet();
+        if (key.isEmpty()) return map.keySet();
         var map = resolveMap(key);
         if (map == null) return Set.of();
         return map.keySet();
@@ -256,6 +269,13 @@ public final class NestedKeyMap {
     }
 
     /**
+     * Clears map
+     */
+    public void clear(){
+        map.clear();
+    }
+
+    /**
      * Put object in map
      *
      * @param key   dot-separated path
@@ -287,7 +307,7 @@ public final class NestedKeyMap {
 
     @Override
     public int hashCode() {
-        return Objects.hash(map);
+        return Objects.hash(map)+ 3*super.hashCode();
     }
 
     @Override

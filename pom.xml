@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xyz.bobkinn</groupId>
-    <artifactId>IndigoDataIo</artifactId>
-    <version>1.0.5</version>
+    <artifactId>indigodataio</artifactId>
+    <version>1.1.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -36,8 +36,9 @@
 
     <distributionManagement>
         <repository>
-            <id>riftrealms</id>
-            <url>http://kvas228.ddns.net:19632/</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/BoBkiNN/IndigoDataIo</url>
         </repository>
     </distributionManagement>
 
