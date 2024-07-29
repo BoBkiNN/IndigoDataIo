@@ -10,7 +10,7 @@ import java.util.*;
  * Class for storing objects by dot-separated string key
  */
 @SuppressWarnings({"unchecked", "unused"})
-public final class NestedKeyMap {
+public class NestedKeyMap {
     private final Map<String, Object> map;
 
     public NestedKeyMap(Map<String, Object> map) {
