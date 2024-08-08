@@ -1,55 +1,40 @@
 package xyz.bobkinn.indigodataio;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Function;
 
-/**
- * Class for storing objects by dot-separated string key
- */
-@SuppressWarnings({"unchecked", "unused"})
-public class NestedKeyMap {
-    private final Map<String, Object> map;
+@RequiredArgsConstructor
+public class NestedKeyMap extends AbstractMap<String, Object> implements DataHolder<NestedKeyMap, Object>{
+    @NonNull // to generate check
+    private final @NotNull Map<String, Object> data;
 
-    public NestedKeyMap(Map<String, Object> map) {
-        this.map = Objects.requireNonNull(map, "map");
+    public NestedKeyMap(){
+        this(new HashMap<>());
     }
 
-    /**
-     * Creates shallow copy that means that changes will appear in both Map(s)
-     * @param map other nested key map
-     */
-    public NestedKeyMap(NestedKeyMap map) {
-        Objects.requireNonNull(map, "map");
-        this.map = map.map();
+    public Map<String, Object> getRaw(){
+        return data;
     }
 
-    public NestedKeyMap() {
-        this.map = new HashMap<>();
+    @Override
+    public NestedKeyMap getNew() {
+        return new NestedKeyMap();
     }
 
-    public int size() {
-        return map.size();
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + data;
     }
 
-    /**
-     *
-     * @param key key like <strong>{@code section.value}</strong>
-     * @return section where {@code value} need to be placed
-     */
-    @Contract("_ -> new")
-    public @NotNull NestedKeyMap getSectionByFullKey(String key){
-        return new NestedKeyMap(resolveMap(extractMapKey(key).getLeft(), true));
-    }
-
-    private Map<String, Object> resolveMap(String key) {
-        return resolveMap(key, false);
-    }
-
+    @Contract("_, true -> !null")
+    @SuppressWarnings("unchecked")
     private Map<String, Object> resolveMap(@NotNull String key, boolean create) {
-        var ret = map;
+        var ret = data;
         for (String k : key.split("\\.")) {
             if (k.isEmpty()) return ret;
             if (ret == null) return null;
@@ -71,6 +56,10 @@ public class NestedKeyMap {
         return ret;
     }
 
+    /**
+     * @param key full key
+     * @return left - map key, right - key inside map
+     */
     @Contract("_ -> new")
     private @NotNull Pair<String, String> extractMapKey(@NotNull String key) {
         int i = key.lastIndexOf(".");
@@ -80,148 +69,84 @@ public class NestedKeyMap {
         return Pair.of(l, r);
     }
 
-    /**
-     * Remove value from map
-     * @param key key
-     * @return removed object or null if not found
-     */
-    public @Nullable Object remove(@NotNull String key){
+    private static void checkEmptyKey(String key){
         if (key.isEmpty()) throw new IllegalArgumentException("Empty key '"+key+"'");
-        var keys = extractMapKey(key);
-        var map = resolveMap(keys.getLeft());
-        if (map == null) return null;
-        return map.remove(keys.getRight());
     }
 
-    public Object getObject(@NotNull String key) {
-        if (key.isEmpty()) return map;
-        var keys = extractMapKey(key);
-        var map = resolveMap(keys.getLeft());
+    @Override
+    public Object remove(String key) {
+        checkEmptyKey(key);
+        var p = extractMapKey(key);
+        var map = resolveMap(p.getLeft(), false);
         if (map == null) return null;
-        return map.get(keys.getRight());
+        return map.remove(p.getRight());
     }
 
-    @NotNull
-    public Set<String> getKeys(@NotNull String key){
-        if (key.isEmpty()) return map.keySet();
-        var map = resolveMap(key);
+    @Override
+    public boolean contains(String key) {
+        checkEmptyKey(key);
+        return data.containsKey(key);
+    }
+
+    @Override
+    public boolean contains(String key, Class<?> type) {
+        var d = get(key);
+        return type.isInstance(d);
+    }
+
+    @Override
+    public boolean containsSection(String key) {
+        return getMap(key) != null;
+    }
+
+    @Override
+    public Set<String> keys() {
+        return data.keySet();
+    }
+
+    @Override
+    public Set<String> keys(String key) {
+        var p = extractMapKey(key);
+        var map = resolveMap(p.getLeft(), false);
         if (map == null) return Set.of();
         return map.keySet();
     }
 
-    @Contract(pure = true)
-    public @NotNull Set<String> getKeys(){
-        return map.keySet();
+    @Override
+    public int size() {
+        return data.size();
     }
 
-    public String getString(String key, String def) {
-        var v = getObject(key);
-        if (v instanceof String s) return s;
-        return def;
+    @Override
+    public void clear() {
+        data.clear();
     }
 
-    public Boolean getBoolean(String key, Boolean def) {
-        var v = getObject(key);
-        if (v instanceof Boolean b) return b;
-        return def;
+    @NotNull
+    @Override
+    public Set<Entry<String, Object>> entrySet() {
+        return data.entrySet();
     }
 
-    public Boolean getBoolean(String key){
-        return getBoolean(key, null);
-    }
-
-    public String getString(String key) {
-        return getString(key, null);
-    }
-
-    public Float getFloat(String key, Float def) {
-        var v = getObject(key);
-        if (v instanceof Number n) return n.floatValue();
-        return def;
-    }
-
-    @Contract("_, _ -> _")
-    public Double getDouble(String key, Double def) {
-        var v = getObject(key);
-        if (v instanceof Number n) return n.doubleValue();
-        return def;
-    }
-
-    public Integer getInt(String key, Integer def) {
-        var v = getObject(key);
-        if (v instanceof Number n) return n.intValue();
-        return def;
-    }
-
-    public Long getLong(String key, Long def) {
-        var v = getObject(key);
-        if (v instanceof Number n) return n.longValue();
-        return def;
-    }
-
-    public Long getLong(String key){
-        return getLong(key, null);
-    }
-
-    public Integer getInt(String key) {
-        return getInt(key, null);
-    }
-
-    public Double getDouble(String key) {
-        return getDouble(key, null);
-    }
-
-    public Map<String, Object> getMap(String key, Map<String, Object> def) {
-        var v = getObject(key);
-        if (v == null) return def;
-        try {
-            return (Map<String, Object>) v;
-        } catch (ClassCastException ignored){
-            return def;
-        }
-    }
-
-    public Map<String, Object> getMap(String key) {
-        return getMap(key, null);
-    }
-
-    /**
-     * Same as {@link #getMap(String)} but wrapped into NestedKeyMap
-     * @param key key
-     * @return NestedKeyMap with contents of map or {@code null} if no map found at this key
-     */
-    public NestedKeyMap getSection(String key) {
-        var map = getMap(key);
-        if (map != null) return new NestedKeyMap(map);
-        else return null;
-    }
-
-    public List<String> getStringList(String key, List<String> def){
-        var v = getObject(key);
-        if (v == null) return def;
-        try {
-            return (List<String>) v;
-        } catch (ClassCastException ignored){
-            return def;
-        }
-    }
-
-    public List<Integer> getIntList(String key, List<Integer> def){
-        var v = getObject(key);
+    public <A extends Number> List<A> getNumberList(String key, Function<Number, A> f, List<A> def){
+        var v = get(key);
         if (v == null) return def;
         try {
             if (v instanceof List<?> l){
-                return ((List<Number>) l).stream().map(Number::intValue).toList();
+                //noinspection unchecked
+                return ((List<Number>) l).stream().map(f).toList();
             } else if (v instanceof int[] l) {
-                return Arrays.stream(l).boxed().toList();
+                return Arrays.stream(l).boxed().map(f).toList();
             } else if (v instanceof float[] l) {
-                return NumberUtil.floatToStream(l).map(Number::intValue).toList();
+                return NumberUtil.floatToStream(l).map(f).toList();
             } else if (v instanceof short[] l) {
-                return NumberUtil.shortToStream(l).map(Number::intValue).toList();
+                return NumberUtil.shortToStream(l).map(f).toList();
             } else if (v instanceof double[] l) {
-                return Arrays.stream(l).boxed().map(Number::intValue).toList();
+                return Arrays.stream(l).boxed().map(f).toList();
             } else if (v instanceof long[] l) {
-                return Arrays.stream(l).boxed().map(Number::intValue).toList();
+                return Arrays.stream(l).boxed().map(f).toList();
+            } else if (v instanceof byte[] l) {
+                return NumberUtil.byteToList(l).stream().map(f).toList();
             }
             return def;
         } catch (ClassCastException ignored){
@@ -229,91 +154,313 @@ public class NestedKeyMap {
         }
     }
 
-    public List<String> getStringList(String key){
-        return getStringList(key, null);
+    @Override
+    public Object get(String key, Object def) {
+        var p = extractMapKey(key);
+        var map = resolveMap(p.getLeft(), false);
+        if (map == null) return def;
+        return map.getOrDefault(p.getRight(), def);
     }
 
-    public List<Map<String, Object>> getMapList(String key, List<Map<String, Object>> def){
-        var v = getObject(key);
-        if (v == null) return def;
+    @Override
+    public Object get(String key) {
+        return get(key, null);
+    }
+
+    @Override
+    public List<?> getList(String key, List<?> def) {
+        var o = get(key, def);
+        if (o instanceof List<?> ls){
+            return ls;
+        } else return def;
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        if (value instanceof NestedKeyMap){
+            throw new IllegalArgumentException("Use putSection to put NestedKeyMap");
+        }
+        var p = extractMapKey(key);
+        var map = resolveMap(p.getLeft(), true);
+        return map.put(p.getRight(), value);
+    }
+
+    @Override
+    public Object putList(String key, List<?> value) {
+        return put(key, value);
+    }
+
+    @Override
+    public NestedKeyMap getSection(String key, NestedKeyMap def) {
+        var m = getMap(key, null);
+        if (m == null) return def;
+        return new NestedKeyMap(m);
+    }
+
+    @Override
+    public NestedKeyMap getSection(String key) {
+        return getSection(key, null);
+    }
+
+    @Override
+    public List<NestedKeyMap> getSectionList(String key, List<NestedKeyMap> def) {
+        var ls = getMapList(key);
+        if (ls == null) return def;
+        return ls.stream().map(NestedKeyMap::new).toList();
+    }
+
+    @Override
+    public Object putSection(String key, NestedKeyMap value) {
+        return put(key, value != null ? value.data : null);
+    }
+
+    @Override
+    public Object putSectionList(String key, List<NestedKeyMap> value) {
+        Object old;
+        if (value == null) {
+            old = put(key, null);
+        } else {
+            old = put(key, value.stream().map(NestedKeyMap::getRaw).toList());
+        }
+        return old;
+    }
+
+    @Override
+    public Map<String, Object> getMap(String key, Map<String, Object> def) {
+        var o = get(key, def);
         try {
+            //noinspection unchecked
+            return (Map<String, Object>) o;
+        } catch (Exception e){
+            return def;
+        }
+    }
+
+    @Override
+    public Map<String, Object> getMap(String key) {
+        return getMap(key, null);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMapList(String key, List<Map<String, Object>> def) {
+        var v = get(key, def);
+        try {
+            //noinspection unchecked
             return (List<Map<String, Object>>) v;
         } catch (ClassCastException ignored){
             return def;
         }
     }
 
-    public List<NestedKeyMap> getSections(String key, List<NestedKeyMap> def){
-        var ls = getMapList(key);
-        if (ls == null) return def;
-        var ret = new ArrayList<NestedKeyMap>(ls.size());
-        for (var map : ls) ret.add(new NestedKeyMap(map));
-        return ret;
+    @Override
+    public Object putMap(String key, Map<String, Object> value) {
+        return put(key, value);
     }
 
-    public List<NestedKeyMap> getSections(String key){
-        return getSections(key, null);
+    @Override
+    public Object putMapList(String key, List<Map<String, Object>> value) {
+        return put(key, value);
     }
 
-    public List<Map<String, Object>> getMapList(String key){
-        return getMapList(key, null);
+    @Override
+    public String getString(String key, String def) {
+        var v = get(key);
+        if (v instanceof String s) return s;
+        else return def;
     }
 
-    /**
-     * Clear this map and set other map to this
-     * @param newMap other
-     */
-    public void clearWith(Map<String, Object> newMap){
-        this.map.clear();
-        this.map.putAll(newMap);
+    @Override
+    public String getString(String key) {
+        return getString(key, null);
     }
 
-    /**
-     * Clears map
-     */
-    public void clear(){
-        map.clear();
-    }
-
-    /**
-     * Put object in map
-     *
-     * @param key   dot-separated path
-     * @param value value to set
-     * @return previous value or null
-     */
-    @SuppressWarnings("UnusedReturnValue")
-    public @Nullable Object put(String key, Object value) {
-        var pair = extractMapKey(key);
-        var map = resolveMap(pair.getLeft(), true);
-        if (map == null) return null;
-        if (value instanceof NestedKeyMap nestedKeyMap) {
-            return map.put(pair.getRight(), nestedKeyMap.map());
+    @Override
+    public List<String> getStringList(String key, List<String> def) {
+        var v = get(key, def);
+        try {
+            //noinspection unchecked
+            return (List<String>) v;
+        } catch (Exception e) {
+            return def;
         }
-        return map.put(pair.getRight(), value);
-    }
-
-    public Map<String, Object> map() {
-        return map;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (NestedKeyMap) obj;
-        return Objects.equals(this.map, that.map);
+    public Object putString(String key, String value) {
+        return put(key, value);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(map)+ 3*super.hashCode();
+    public Object putStringList(String key, List<String> value) {
+        return put(key, value);
     }
 
     @Override
-    public String toString() {
-        return map.toString();
+    public byte getByte(String key, byte def) {
+        var v = get(key);
+        if (v == null) return def;
+        if (v instanceof Number n) return n.byteValue();
+        return def;
+    }
+
+    @Override
+    public byte getByte(String key) {
+        return getByte(key, (byte) 0);
+    }
+
+    @Override
+    public List<Byte> getByteList(String key, List<Byte> def) {
+        return getNumberList(key, Number::byteValue, def);
+    }
+
+    @Override
+    public Object putByte(String key, byte value) {
+        return put(key, value);
+    }
+
+    @Override
+    public Object putByteList(String key, List<Byte> value) {
+        return put(key, value);
+    }
+
+    @Override
+    public short getShort(String key, short def) {
+        var v = get(key);
+        if (v == null) return def;
+        if (v instanceof Number n) return n.shortValue();
+        return def;
+    }
+
+    @Override
+    public short getShort(String key) {
+        return getShort(key, (short) 0);
+    }
+
+    @Override
+    public List<Short> getShortList(String key, List<Short> def) {
+        return getNumberList(key, Number::shortValue, def);
+    }
+
+    @Override
+    public Object putShort(String key, short value) {
+        return put(key, value);
+    }
+
+    @Override
+    public Object putShortList(String key, List<Short> value) {
+        return put(key, value);
+    }
+
+    @Override
+    public int getInt(String key, int def) {
+        var v = get(key);
+        if (v == null) return def;
+        if (v instanceof Number n) return n.intValue();
+        return def;
+    }
+
+    @Override
+    public int getInt(String key) {
+        return getInt(key, 0);
+    }
+
+    @Override
+    public List<Integer> getIntList(String key, List<Integer> def) {
+        return getNumberList(key, Number::intValue, def);
+    }
+
+    @Override
+    public Object putInt(String key, int value) {
+        return put(key, value);
+    }
+
+    @Override
+    public Object putIntList(String key, List<Integer> value) {
+        return put(key, value);
+    }
+
+    @Override
+    public long getLong(String key, long def) {
+        var v = get(key);
+        if (v == null) return def;
+        if (v instanceof Number n) return n.longValue();
+        return def;
+    }
+
+    @Override
+    public long getLong(String key) {
+        return getLong(key, 0L);
+    }
+
+    @Override
+    public List<Long> getLongList(String key, List<Long> def) {
+        return getNumberList(key, Number::longValue, def);
+    }
+
+    @Override
+    public Object putLong(String key, long value) {
+        return put(key, value);
+    }
+
+    @Override
+    public Object putLongList(String key, List<Long> value) {
+        return put(key, value);
+    }
+
+    @Override
+    public float getFloat(String key, float def) {
+        var v = get(key);
+        if (v == null) return def;
+        if (v instanceof Number n) return n.floatValue();
+        return def;
+    }
+
+    @Override
+    public float getFloat(String key) {
+        return getFloat(key, 0);
+    }
+
+    @Override
+    public List<Float> getFloatList(String key, List<Float> def) {
+        return getNumberList(key, Number::floatValue, def);
+    }
+
+    @Override
+    public Object putFloat(String key, float value) {
+        return put(key, value);
+    }
+
+    @Override
+    public Object putFloatList(String key, List<Float> value) {
+        return put(key, value);
+    }
+
+    @Override
+    public double getDouble(String key, double def) {
+        var v = get(key);
+        if (v == null) return def;
+        if (v instanceof Number n) return n.doubleValue();
+        return def;
+    }
+
+    @Override
+    public double getDouble(String key) {
+        return getDouble(key, 0);
+    }
+
+    @Override
+    public List<Double> getDoubleList(String key, List<Double> def) {
+        return getNumberList(key, Number::doubleValue, def);
+    }
+
+    @Override
+    public Object putDouble(String key, double value) {
+        return put(key, value);
+    }
+
+    @Override
+    public Object putDoubleList(String key, List<Double> value) {
+        return put(key, value);
     }
 
 }
-

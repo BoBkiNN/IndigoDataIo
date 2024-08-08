@@ -2,7 +2,7 @@ package map;
 
 import org.junit.Test;
 import xyz.bobkinn.indigodataio.MapBuilder;
-import xyz.bobkinn.indigodataio.MapDataHolder;
+import xyz.bobkinn.indigodataio.NestedKeyMap;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +35,7 @@ public class MapTest {
 
     @Test
     public void testSectionList(){
-        var map = new MapDataHolder();
+        var map = new NestedKeyMap();
         map.put("ls", List.of(Map.of("k", 1), Map.of("k2", 2)));
         map.putIntArray("ir", new int[]{1, 3, -4});
         System.out.println(map);
@@ -53,14 +53,14 @@ public class MapTest {
 
     @Test
     public void testIntList(){
-        var map = new MapDataHolder();
+        var map = new NestedKeyMap();
         map.put("l", new int[]{3, 3, 3});
         System.out.println(map.getIntList("l", null));
     }
 
     @Test
     public void testNums(){
-        var map = new MapDataHolder();
+        var map = new NestedKeyMap();
         map.put("s", (short) 1);
         map.put("i", 2);
         map.put("f", 3f);
