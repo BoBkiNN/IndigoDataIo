@@ -2,8 +2,9 @@ package map;
 
 import org.junit.Test;
 import xyz.bobkinn.indigodataio.MapBuilder;
-import xyz.bobkinn.indigodataio.NestedKeyMap;
+import xyz.bobkinn.indigodataio.MapDataHolder;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,33 +35,38 @@ public class MapTest {
 
     @Test
     public void testSectionList(){
-        var map = new NestedKeyMap();
+        var map = new MapDataHolder();
         map.put("ls", List.of(Map.of("k", 1), Map.of("k2", 2)));
+        map.putIntArray("ir", new int[]{1, 3, -4});
         System.out.println(map);
         var maps = map.getMapList("ls");
         var mm = maps.get(0);
         System.out.println(mm);
-        var sections = map.getSections("ls");
+        var ir = map.getIntArray("ir");
+        System.out.println("Arrays.toString(ir) = " + Arrays.toString(ir));
+        var sections = map.getSectionList("ls");
         System.out.println(sections);
+        System.out.println(map);
+        var maps2 = map.getMapArray("ls");
+        System.out.println(Arrays.toString(maps2));
     }
 
     @Test
     public void testIntList(){
-        var map = new NestedKeyMap();
+        var map = new MapDataHolder();
         map.put("l", new int[]{3, 3, 3});
         System.out.println(map.getIntList("l", null));
     }
 
     @Test
     public void testNums(){
-        var map = new NestedKeyMap();
+        var map = new MapDataHolder();
         map.put("s", (short) 1);
         map.put("i", 2);
         map.put("f", 3f);
         map.put("d", 4d);
         map.put("l", 5L);
         var d = map.getDouble("d");
-        assert d != null;
         assert d == 4.0d;
     }
 }
