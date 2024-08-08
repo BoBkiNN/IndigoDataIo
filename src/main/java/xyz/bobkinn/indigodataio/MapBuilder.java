@@ -40,7 +40,7 @@ public class MapBuilder {
      */
     public MapBuilder down(String name){
         var map = new NestedKeyMap();
-        this.map.put(name, map);
+        this.map.putSection(name, map);
         return new MapBuilder(this, map);
     }
 
