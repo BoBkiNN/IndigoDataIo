@@ -17,6 +17,10 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
         this(new HashMap<>());
     }
 
+    public static MapBuilder<NestedKeyMap, Object> newBuilder(){
+        return new NestedKeyMap().toBuilder();
+    }
+
     public Map<String, Object> getRaw(){
         return data;
     }
@@ -27,8 +31,28 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
     }
 
     @Override
+    public MapBuilder<NestedKeyMap, Object> toBuilder() {
+        return new MapBuilder<>(null, this, NestedKeyMap::new,
+                n -> n, b -> b, s -> s);
+    }
+
+    @Override
+    public MapBuilder<NestedKeyMap, Object> toBuilder(String key) {
+        checkEmptyKey(key);
+        NestedKeyMap root;
+        if (containsSection(key)) {
+            root = getSection(key);
+        } else {
+            root = new NestedKeyMap();
+            putSection(key, root);
+        }
+        return new MapBuilder<>(null, root, NestedKeyMap::new,
+                n -> n, b -> b, s -> s);
+    }
+
+    @Override
     public String toString() {
-        return getClass().getSimpleName() + data;
+        return data.toString();
     }
 
     @Contract("_, true -> !null")
@@ -85,7 +109,10 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
     @Override
     public boolean contains(String key) {
         checkEmptyKey(key);
-        return data.containsKey(key);
+        var p = extractMapKey(key);
+        var map = resolveMap(p.getLeft(), false);
+        if (map == null) return false;
+        return map.containsKey(p.getRight());
     }
 
     @Override

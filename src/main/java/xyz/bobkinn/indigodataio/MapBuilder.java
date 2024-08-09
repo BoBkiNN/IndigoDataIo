@@ -1,25 +1,33 @@
 package xyz.bobkinn.indigodataio;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
- * NestedKeyMap builder for simple chaining
+ * Data holder builder for simple chaining
+ * @param <T> holder impl
+ * @param <P> holder base data type
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class MapBuilder {
-    private final MapBuilder parent;
-    private final NestedKeyMap map;
+@RequiredArgsConstructor
+public class MapBuilder<T extends DataHolder<T, P>, P> {
+    private final MapBuilder<T, P> parent;
+    private final T holder;
+    private final Supplier<T> creator;
+    private final Function<Number, P> numberConv;
+    private final Function<Boolean, P> boolConv;
+    private final Function<String, P> strConv;
 
     /**
-     * Creates a new, empty builder
-     * @return new builder
+     * Put section on current level
+     * @param key key
+     * @param value value
+     * @return builder on this level
      */
-    @Contract(" -> new")
-    public static @NotNull MapBuilder newBuilder(){
-        return new MapBuilder(null, new NestedKeyMap());
+    public MapBuilder<T, P> put(String key, T value){
+        holder.putSection(key, value);
+        return this;
     }
 
     /**
@@ -28,8 +36,41 @@ public class MapBuilder {
      * @param value value
      * @return builder on this level
      */
-    public MapBuilder put(String key, Object value){
-        map.put(key, value);
+    public MapBuilder<T, P> put(String key, P value){
+        holder.put(key, value);
+        return this;
+    }
+
+    /**
+     * Put number on current level
+     * @param key key
+     * @param value value
+     * @return builder on this level
+     */
+    public MapBuilder<T, P> put(String key, Number value){
+        holder.put(key, numberConv.apply(value));
+        return this;
+    }
+
+    /**
+     * Put boolean on current level
+     * @param key key
+     * @param value value
+     * @return builder on this level
+     */
+    public MapBuilder<T, P> put(String key, Boolean value){
+        holder.put(key, boolConv.apply(value));
+        return this;
+    }
+
+    /**
+     * Put string on current level
+     * @param key key
+     * @param value value
+     * @return builder on this level
+     */
+    public MapBuilder<T, P> put(String key, String value){
+        holder.put(key, strConv.apply(value));
         return this;
     }
 
@@ -38,29 +79,28 @@ public class MapBuilder {
      * @param name key
      * @return builder on new level
      */
-    public MapBuilder down(String name){
-        var map = new NestedKeyMap();
-        this.map.putSection(name, map);
-        return new MapBuilder(this, map);
+    public MapBuilder<T, P> down(String name){
+        var map = creator.get();
+        this.holder.putSection(name, map);
+        return new MapBuilder<>(this, map, creator, numberConv, boolConv, strConv);
     }
 
     /**
      * Goes up to one level or not if this level is top
      * @return parent level if exists, else this level
      */
-    public MapBuilder up(){
+    public MapBuilder<T, P> up(){
         return parent != null ? parent : this;
     }
 
     /**
-     * Gathers map from top level
-     * @return resulting map
+     * @return top level holder
      */
-    public NestedKeyMap build(){
+    public T build(){
         var root = this;
         while (root.parent != null){
             root = root.parent;
         }
-        return root.map;
+        return root.holder;
     }
 }

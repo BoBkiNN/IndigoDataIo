@@ -41,6 +41,18 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     T getNew();
 
+    /**
+     * @return new builder
+     */
+    MapBuilder<T, P> toBuilder();
+
+    /**
+     * Get a builder view on this key
+     * @param key key
+     * @return new builder
+     */
+    MapBuilder<T, P> toBuilder(String key);
+
     P remove(String key);
 
     boolean contains(String key);

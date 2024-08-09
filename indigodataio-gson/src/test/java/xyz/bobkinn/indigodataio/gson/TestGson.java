@@ -1,24 +1,23 @@
-package map;
+package xyz.bobkinn.indigodataio.gson;
 
+import com.google.gson.JsonPrimitive;
 import org.junit.Test;
-import xyz.bobkinn.indigodataio.NestedKeyMap;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class MapTest {
-
+public class TestGson {
     @Test
     public void builderTest(){
-        var b = NestedKeyMap.newBuilder()
+        var b = GsonData.newBuilder()
                 .put("k1", 11)
                 .down("o")
-                    .put("k2", 22)
-                    .down("o2")
-                        .put("k3", 33)
-                        .up()
-                    .put("k4", 23)
+                .put("k2", 22)
+                .down("o2")
+                .put("k3", 33)
+                .up()
+                .put("k4", 23)
                 .up()
                 .put("k5", 12)
                 .build();
@@ -32,7 +31,7 @@ public class MapTest {
                 .put("k8", 88);
         System.out.println("b = " + b);
 
-        var b2 = NestedKeyMap.newBuilder()
+        var b2 = GsonData.newBuilder()
                 .put("k1", 11)
                 .down("o")
                 .put("k2", 22)
@@ -43,8 +42,10 @@ public class MapTest {
 
     @Test
     public void testSectionList(){
-        var map = new NestedKeyMap();
-        map.put("ls", List.of(Map.of("k", 1), Map.of("k2", 2)));
+        var map = new GsonData();
+        map.putMapList("ls", List.of(
+                Map.of("k", new JsonPrimitive(1)),
+                Map.of("k2", new JsonPrimitive(2))));
         map.putIntArray("ir", new int[]{1, 3, -4});
         System.out.println(map);
         var maps = map.getMapList("ls");
@@ -61,21 +62,20 @@ public class MapTest {
 
     @Test
     public void testIntList(){
-        var map = new NestedKeyMap();
-        map.put("l", new int[]{3, 3, 3});
+        var map = new GsonData();
+        map.putIntArray("l", new int[]{3, 3, 3});
         System.out.println(map.getIntList("l", null));
     }
 
     @Test
     public void testNums(){
-        var map = new NestedKeyMap();
-        map.put("s", (short) 1);
-        map.put("i", 2);
-        map.put("f", 3f);
-        map.put("d", 4d);
-        map.put("l", 5L);
+        var map = new GsonData();
+        map.putShort("s", (short) 1);
+        map.putInt("i", 2);
+        map.putFloat("f", 3f);
+        map.putDouble("d", 4d);
+        map.putLong("l", 5L);
         var d = map.getDouble("d");
         assert d == 4.0d;
-        System.out.println("map = " + map);
     }
 }
