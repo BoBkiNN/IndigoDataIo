@@ -10,6 +10,7 @@ import java.util.function.Supplier;
  * @param <T> holder impl
  * @param <P> holder base data type
  */
+@SuppressWarnings("unused")
 @RequiredArgsConstructor
 public class MapBuilder<T extends DataHolder<T, P>, P> {
     private final MapBuilder<T, P> parent;
