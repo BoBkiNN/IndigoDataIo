@@ -17,3 +17,21 @@ For example, we want to put int in gson's JsonObject,
 but we need to wrap it into JsonPrimitive for it and this operation of wrapping performs 
 [GsonOps](indigodataio-gson/src/main/java/xyz/bobkinn/indigodataio/gson/GsonOps.java).
 This system was based on Mojang's DataFixerUpper library
+
+### Usage in maven:
+Gson artifact: Provides support for gson library and `GsonOps` with `GsonData` and `JsonIo`
+```xml
+<dependency>
+    <groupId>com.github.BoBkiNN.IndigoDataIo</groupId>
+    <artifactId>gson</artifactId>
+    <version>3.0.1</version>
+</dependency>
+```
+Version with only `MapOps` (Simple java Map using `NestedKeyMap`) support
+```xml
+<dependency>
+    <groupId>com.github.BoBkiNN.IndigoDataIo</groupId>
+    <artifactId>indigodataio</artifactId>
+    <version>3.0.1</version>
+</dependency>
+```
