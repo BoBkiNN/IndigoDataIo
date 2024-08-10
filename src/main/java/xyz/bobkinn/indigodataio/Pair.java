@@ -7,6 +7,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Copy of org.apache.commons.lang3.tuple.Pair
@@ -45,6 +47,21 @@ public abstract class Pair<L, R> implements Map.Entry<L, R>, Serializable {
             return Objects.equals(getLeft(), pair.getKey()) && Objects.equals(getRight(), pair.getValue());
         }
         return false;
+    }
+
+    public L getFirst(){
+        return getLeft();
+    }
+
+    public R getSecond(){
+        return getRight();
+    }
+    public static <F, S> Collector<Pair<F, S>, ?, Map<F, S>> toMap() {
+        return Collectors.toMap(Pair::getFirst, Pair::getSecond);
+    }
+
+    public Map.Entry<L, R> toEntry(){
+        return Map.entry(getKey(), getValue());
     }
 
     // Map.Entry

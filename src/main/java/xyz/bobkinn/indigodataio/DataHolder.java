@@ -1,5 +1,9 @@
 package xyz.bobkinn.indigodataio;
 
+import xyz.bobkinn.indigodataio.ops.MapOps;
+import xyz.bobkinn.indigodataio.ops.TypeOps;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +57,8 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
      */
     MapBuilder<T, P> toBuilder(String key);
 
+    TypeOps<P> getOps();
+
     P remove(String key);
 
     boolean contains(String key);
@@ -73,7 +79,7 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
         return null;
     }
 
-    /* BASIC METHODS */
+    /* TYPE ARGS AND MAPS METHODS */
 
     // getters
 
@@ -97,12 +103,31 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // setters
 
-    P put(String key, P value);
+    /**
+     * Puts java value in this map
+     * @param key key
+     * @param value value that can be converted using {@link MapOps#convertTo(TypeOps, Object)}
+     * @return previous value
+     */
+    default P put(String key, Object value){
+        return putValue(key, MapOps.INSTANCE.convertTo(getOps(), value));
+    }
 
-    P putList(String key, List<? extends P> value);
+    /**
+     * Puts type value that extends P. When P is Object then {@link #put(String, Object)} is recommended.
+     * Or use precise methods for accurate value storing
+     * @param key key
+     * @param value value that extends P
+     * @return previous value
+     */
+    P putValue(String key, P value);
+
+    default P putList(String key, List<? extends P> value){
+        return putValue(key, getOps().createList(value.stream()));
+    }
 
     default P putArray(String key, P[] value) {
-        return putList(key, toList(value));
+        return putValue(key, getOps().createList(Arrays.stream(value)));
     }
 
     /* SECTION METHODS */
@@ -165,6 +190,16 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     P putMap(String key, Map<String, P> value);
 
+    /**
+     * Puts map but all values are converted using {@link MapOps#convertMap(TypeOps, Object)}
+     * @param key key
+     * @param value map
+     * @return previous value
+     */
+    default P putRawMap(String key, Map<String, Object> value){
+        return putValue(key, MapOps.INSTANCE.convertMap(getOps(), value));
+    }
+
     P putMapList(String key, List<Map<String, P>> value);
 
     default P putMapArray(String key, Map<String, P>[] value) {
@@ -177,32 +212,84 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    String getString(String key, String def);
+    default String getString(String key, String def){
+        return getOps().getString(get(key)).orElse(def);
+    }
 
-    String getString(String key);
+    default String getString(String key){
+        return getString(key, null);
+    }
 
-    List<String> getStringList(String key, List<String> def);
+    default List<String> getStringList(String key, List<String> def) {
+        return getOps().getStringList(get(key)).orElse(def);
+    }
 
     default List<String> getStringList(String key){
         return getStringList(key, getDefaultList());
     }
 
     default String[] getStringArray(String key, String[] def){
-        return toArray(getStringList(key, toList(def)));
+        return getOps().getStringArray(get(key)).orElse(def);
     }
 
     default String[] getStringArray(String key){
-        return toArray(getStringList(key));
+        return getStringArray(key, null);
     }
 
     // setters
 
-    P putString(String key, String value);
+    default P putString(String key, String value){
+        return putValue(key, getOps().createString(value));
+    }
 
-    P putStringList(String key, List<String> value);
+    default P putStringList(String key, List<String> value){
+        return putValue(key, getOps().createStringList(value));
+    }
 
     default P putStringArray(String key, String[] value){
-        return putStringList(key, toList(value));
+        return putValue(key, getOps().createStringArray(value));
+    }
+
+    /* Bool methods */
+
+    // getters
+
+    default boolean getBoolean(String key, boolean def) {
+        return getOps().getBoolean(get(key)).orElse(def);
+    }
+
+    default boolean getBoolean(String key){
+        return getBoolean(key, false);
+    }
+
+    default List<Boolean> getBoolList(String key, List<Boolean> def){
+        return getOps().getBoolList(get(key)).orElse(def);
+    }
+
+    default List<Boolean> getBoolList(String key){
+        return getBoolList(key, getDefaultList());
+    }
+
+    default boolean[] getBoolArray(String key, boolean[] def){
+        return getOps().getBoolArray(get(key)).orElse(def);
+    }
+
+    default boolean[] getBoolArray(String key){
+        return getBoolArray(key, null);
+    }
+
+    // setters
+
+    default P putBoolean(String key, boolean value){
+        return putValue(key, getOps().createBoolean(value));
+    }
+
+    default P putBoolList(String key, List<Boolean> value){
+        return putValue(key, getOps().createBoolList(value));
+    }
+
+    default P putBoolArray(String key, boolean[] value){
+        return putValue(key, getOps().createBoolArray(value));
     }
 
 
@@ -210,32 +297,42 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    byte getByte(String key, byte def);
+    default byte getByte(String key, byte def) {
+        return getOps().getByte(get(key)).orElse(def);
+    }
 
-    byte getByte(String key);
+    default byte getByte(String key){
+        return getByte(key, (byte) 0);
+    }
 
-    List<Byte> getByteList(String key, List<Byte> def);
+    default List<Byte> getByteList(String key, List<Byte> def){
+        return getOps().getByteList(get(key)).orElse(def);
+    }
 
     default List<Byte> getByteList(String key){
         return getByteList(key, getDefaultList());
     }
 
     default byte[] getByteArray(String key, byte[] def){
-        return NumberUtil.listToByte(getByteList(key, NumberUtil.byteToList(def)));
+        return getOps().getByteArray(get(key)).orElse(def);
     }
 
     default byte[] getByteArray(String key){
-        return NumberUtil.listToByte(getByteList(key));
+        return getByteArray(key, null);
     }
 
     // setters
 
-    P putByte(String key, byte value);
+    default P putByte(String key, byte value){
+        return putValue(key, getOps().createByte(value));
+    }
 
-    P putByteList(String key, List<Byte> value);
+    default P putByteList(String key, List<Byte> value){
+        return putValue(key, getOps().createByteList(value));
+    }
 
     default P putByteArray(String key, byte[] value){
-        return putByteList(key, NumberUtil.byteToList(value));
+        return putValue(key, getOps().createByteArray(value));
     }
 
 
@@ -243,32 +340,42 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    short getShort(String key, short def);
+    default short getShort(String key, short def){
+        return getOps().getShort(get(key)).orElse(def);
+    }
 
-    short getShort(String key);
+    default short getShort(String key) {
+        return getShort(key, (short) 0);
+    }
 
-    List<Short> getShortList(String key, List<Short> def);
+    default List<Short> getShortList(String key, List<Short> def){
+        return getOps().getShortList(get(key)).orElse(def);
+    }
 
     default List<Short> getShortList(String key){
         return getShortList(key, getDefaultList());
     }
 
     default short[] getShortArray(String key, short[] def){
-        return NumberUtil.listToShort(getShortList(key, NumberUtil.shortToList(def)));
+        return getOps().getShortArray(get(key)).orElse(def);
     }
 
     default short[] getShortArray(String key){
-        return NumberUtil.listToShort(getShortList(key));
+        return getShortArray(key,null);
     }
 
     // setters
 
-    P putShort(String key, short value);
+    default P putShort(String key, short value){
+        return putValue(key, getOps().createShort(value));
+    }
 
-    P putShortList(String key, List<Short> value);
+    default P putShortList(String key, List<Short> value){
+        return putValue(key, getOps().createShortList(value));
+    }
 
     default P putShortArray(String key, short[] value){
-        return putShortList(key, NumberUtil.shortToList(value));
+        return putValue(key, getOps().createShortArray(value));
     }
 
 
@@ -276,32 +383,42 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    int getInt(String key, int def);
+    default int getInt(String key, int def){
+        return getOps().getInt(get(key)).orElse(def);
+    }
 
-    int getInt(String key);
+    default int getInt(String key) {
+        return getInt(key, 0);
+    }
 
-    List<Integer> getIntList(String key, List<Integer> def);
+    default List<Integer> getIntList(String key, List<Integer> def){
+        return getOps().getIntList(get(key)).orElse(def);
+    }
 
     default List<Integer> getIntList(String key){
         return getIntList(key, getDefaultList());
     }
 
     default int[] getIntArray(String key, int[] def){
-        return NumberUtil.listToInt(getIntList(key, NumberUtil.intToList(def)));
+        return getOps().getIntArray(get(key)).orElse(def);
     }
 
     default int[] getIntArray(String key){
-        return NumberUtil.listToInt(getIntList(key));
+        return getIntArray(key, null);
     }
 
     // setters
 
-    P putInt(String key, int value);
+    default P putInt(String key, int value){
+        return putValue(key, getOps().createInt(value));
+    }
 
-    P putIntList(String key, List<Integer> value);
+    default P putIntList(String key, List<Integer> value){
+        return putValue(key, getOps().createIntList(value));
+    }
 
     default P putIntArray(String key, int[] value){
-        return putIntList(key, NumberUtil.intToList(value));
+        return putValue(key, getOps().createIntArray(value));
     }
 
 
@@ -309,32 +426,42 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    long getLong(String key, long def);
+    default long getLong(String key, long def){
+        return getOps().getLong(get(key)).orElse(def);
+    }
 
-    long getLong(String key);
+    default long getLong(String key) {
+        return getLong(key, 0L);
+    }
 
-    List<Long> getLongList(String key, List<Long> def);
+    default List<Long> getLongList(String key, List<Long> def){
+        return getOps().getLongList(get(key)).orElse(def);
+    }
 
     default List<Long> getLongList(String key){
         return getLongList(key, getDefaultList());
     }
 
     default long[] getLongArray(String key, long[] def){
-        return NumberUtil.listToLong(getLongList(key, NumberUtil.longToList(def)));
+        return getOps().getLongArray(get(key)).orElse(def);
     }
 
     default long[] getLongArray(String key){
-        return NumberUtil.listToLong(getLongList(key));
+        return getLongArray(key, null);
     }
 
     // setters
 
-    P putLong(String key, long value);
+    default P putLong(String key, long value){
+        return putValue(key, getOps().createLong(value));
+    }
 
-    P putLongList(String key, List<Long> value);
+    default P putLongList(String key, List<Long> value){
+        return putValue(key, getOps().createLongList(value));
+    }
 
     default P putLongArray(String key, long[] value){
-        return putLongList(key, NumberUtil.longToList(value));
+        return putValue(key, getOps().createLongArray(value));
     }
 
 
@@ -342,32 +469,42 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    float getFloat(String key, float def);
+    default float getFloat(String key, float def){
+        return getOps().getFloat(get(key)).orElse(def);
+    }
 
-    float getFloat(String key);
+    default float getFloat(String key) {
+        return getFloat(key, 0);
+    }
 
-    List<Float> getFloatList(String key, List<Float> def);
+    default List<Float> getFloatList(String key, List<Float> def){
+        return getOps().getFloatList(get(key)).orElse(def);
+    }
 
     default List<Float> getFloatList(String key){
         return getFloatList(key, getDefaultList());
     }
 
     default float[] getFloatArray(String key, float[] def){
-        return NumberUtil.listToFloat(getFloatList(key, NumberUtil.floatToList(def)));
+        return getOps().getFloatArray(get(key)).orElse(def);
     }
 
     default float[] getFloatArray(String key){
-        return NumberUtil.listToFloat(getFloatList(key));
+        return getFloatArray(key, null);
     }
 
     // setters
 
-    P putFloat(String key, float value);
+    default P putFloat(String key, float value){
+        return putValue(key, getOps().createFloat(value));
+    }
 
-    P putFloatList(String key, List<Float> value);
+    default P putFloatList(String key, List<Float> value){
+        return putValue(key, getOps().createFloatList(value));
+    }
 
     default P putFloatArray(String key, float[] value){
-        return putFloatList(key, NumberUtil.floatToList(value));
+        return putValue(key, getOps().createFloatArray(value));
     }
 
 
@@ -375,32 +512,42 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     // getters
 
-    double getDouble(String key, double def);
+    default double getDouble(String key, double def){
+        return getOps().getDouble(get(key)).orElse(def);
+    }
 
-    double getDouble(String key);
+    default double getDouble(String key) {
+        return getDouble(key, 0);
+    }
 
-    List<Double> getDoubleList(String key, List<Double> def);
+    default List<Double> getDoubleList(String key, List<Double> def){
+        return getOps().getDoubleList(get(key)).orElse(def);
+    }
 
     default List<Double> getDoubleList(String key){
         return getDoubleList(key, getDefaultList());
     }
 
     default double[] getDoubleArray(String key, double[] def){
-        return NumberUtil.listToDouble(getDoubleList(key, NumberUtil.doubleToList(def)));
+        return getOps().getDoubleArray(get(key)).orElse(def);
     }
 
     default double[] getDoubleArray(String key){
-        return NumberUtil.listToDouble(getDoubleList(key));
+        return getDoubleArray(key, null);
     }
 
     // setters
 
-    P putDouble(String key, double value);
+    default P putDouble(String key, double value){
+        return putValue(key, getOps().createDouble(value));
+    }
 
-    P putDoubleList(String key, List<Double> value);
+    default P putDoubleList(String key, List<Double> value){
+        return putValue(key, getOps().createDoubleList(value));
+    }
 
     default P putDoubleArray(String key, double[] value){
-        return putDoubleList(key, NumberUtil.doubleToList(value));
+        return putValue(key, getOps().createDoubleArray(value));
     }
 
     //</editor-fold>
