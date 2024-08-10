@@ -10,6 +10,7 @@
         <version>3.0.1</version>
     </parent>
 
+    <groupId>xyz.bobkinn.indigodataio</groupId>
     <artifactId>gson</artifactId>
 
     <dependencies>
