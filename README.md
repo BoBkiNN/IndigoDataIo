@@ -19,6 +19,14 @@ but we need to wrap it into JsonPrimitive for it and this operation of wrapping 
 This system was based on Mojang's DataFixerUpper library
 
 ### Usage in maven:
+Repository:
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+
 Gson artifact: Provides support for gson library and `GsonOps` with `GsonData` and `JsonIo`
 ```xml
 <dependency>
