@@ -63,17 +63,17 @@ public class MapTest {
     public void testIntList(){
         var map = new NestedKeyMap();
         map.put("l", new int[]{3, 3, 3});
-        System.out.println(map.getIntList("l", null));
+        System.out.println(Arrays.toString(map.getIntArray("l", null)));
     }
 
     @Test
     public void testNums(){
         var map = new NestedKeyMap();
-        map.put("s", (short) 1);
-        map.put("i", 2);
-        map.put("f", 3f);
-        map.put("d", 4d);
-        map.put("l", 5L);
+        map.putValue("s", (short) 1);
+        map.putValue("i", 2);
+        map.putValue("f", 3f);
+        map.putValue("d", 4d);
+        map.putValue("l", 5L);
         var d = map.getDouble("d");
         assert d == 4.0d;
         System.out.println("map = " + map);

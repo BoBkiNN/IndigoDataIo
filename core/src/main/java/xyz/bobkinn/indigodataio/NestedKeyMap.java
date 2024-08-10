@@ -4,9 +4,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import xyz.bobkinn.indigodataio.ops.MapOps;
+import xyz.bobkinn.indigodataio.ops.TypeOps;
 
 import java.util.*;
-import java.util.function.Function;
 
 @RequiredArgsConstructor
 public class NestedKeyMap extends AbstractMap<String, Object> implements DataHolder<NestedKeyMap, Object>{
@@ -28,6 +29,11 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
     @Override
     public NestedKeyMap getNew() {
         return new NestedKeyMap();
+    }
+
+    @Override
+    public TypeOps<Object> getOps() {
+        return MapOps.INSTANCE;
     }
 
     @Override
@@ -155,32 +161,6 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
         return data.entrySet();
     }
 
-    public <A extends Number> List<A> getNumberList(String key, Function<Number, A> f, List<A> def){
-        var v = get(key);
-        if (v == null) return def;
-        try {
-            if (v instanceof List<?> l){
-                //noinspection unchecked
-                return ((List<Number>) l).stream().map(f).toList();
-            } else if (v instanceof int[] l) {
-                return Arrays.stream(l).boxed().map(f).toList();
-            } else if (v instanceof float[] l) {
-                return NumberUtil.floatToStream(l).map(f).toList();
-            } else if (v instanceof short[] l) {
-                return NumberUtil.shortToStream(l).map(f).toList();
-            } else if (v instanceof double[] l) {
-                return Arrays.stream(l).boxed().map(f).toList();
-            } else if (v instanceof long[] l) {
-                return Arrays.stream(l).boxed().map(f).toList();
-            } else if (v instanceof byte[] l) {
-                return NumberUtil.byteToList(l).stream().map(f).toList();
-            }
-            return def;
-        } catch (ClassCastException ignored){
-            return def;
-        }
-    }
-
     @Override
     public Object get(String key, Object def) {
         var p = extractMapKey(key);
@@ -204,6 +184,11 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
 
     @Override
     public Object put(String key, Object value) {
+        return DataHolder.super.put(key, value);
+    }
+
+    @Override
+    public Object putValue(String key, Object value) {
         if (value instanceof NestedKeyMap){
             throw new IllegalArgumentException("Use putSection to put NestedKeyMap");
         }
@@ -214,7 +199,7 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
 
     @Override
     public Object putList(String key, List<?> value) {
-        return put(key, value);
+        return putValue(key, value);
     }
 
     @Override
@@ -238,16 +223,16 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
 
     @Override
     public Object putSection(String key, NestedKeyMap value) {
-        return put(key, value != null ? value.data : null);
+        return putValue(key, value != null ? value.data : null);
     }
 
     @Override
     public Object putSectionList(String key, List<NestedKeyMap> value) {
         Object old;
         if (value == null) {
-            old = put(key, null);
+            old = putValue(key, null);
         } else {
-            old = put(key, value.stream().map(NestedKeyMap::getRaw).toList());
+            old = putValue(key, value.stream().map(NestedKeyMap::getRaw).toList());
         }
         return old;
     }
@@ -281,213 +266,12 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
 
     @Override
     public Object putMap(String key, Map<String, Object> value) {
-        return put(key, value);
+        return putValue(key, value);
     }
 
     @Override
     public Object putMapList(String key, List<Map<String, Object>> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public String getString(String key, String def) {
-        var v = get(key);
-        if (v instanceof String s) return s;
-        else return def;
-    }
-
-    @Override
-    public String getString(String key) {
-        return getString(key, null);
-    }
-
-    @Override
-    public List<String> getStringList(String key, List<String> def) {
-        var v = get(key, def);
-        try {
-            //noinspection unchecked
-            return (List<String>) v;
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    @Override
-    public Object putString(String key, String value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putStringList(String key, List<String> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public byte getByte(String key, byte def) {
-        var v = get(key);
-        if (v == null) return def;
-        if (v instanceof Number n) return n.byteValue();
-        return def;
-    }
-
-    @Override
-    public byte getByte(String key) {
-        return getByte(key, (byte) 0);
-    }
-
-    @Override
-    public List<Byte> getByteList(String key, List<Byte> def) {
-        return getNumberList(key, Number::byteValue, def);
-    }
-
-    @Override
-    public Object putByte(String key, byte value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putByteList(String key, List<Byte> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public short getShort(String key, short def) {
-        var v = get(key);
-        if (v == null) return def;
-        if (v instanceof Number n) return n.shortValue();
-        return def;
-    }
-
-    @Override
-    public short getShort(String key) {
-        return getShort(key, (short) 0);
-    }
-
-    @Override
-    public List<Short> getShortList(String key, List<Short> def) {
-        return getNumberList(key, Number::shortValue, def);
-    }
-
-    @Override
-    public Object putShort(String key, short value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putShortList(String key, List<Short> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public int getInt(String key, int def) {
-        var v = get(key);
-        if (v == null) return def;
-        if (v instanceof Number n) return n.intValue();
-        return def;
-    }
-
-    @Override
-    public int getInt(String key) {
-        return getInt(key, 0);
-    }
-
-    @Override
-    public List<Integer> getIntList(String key, List<Integer> def) {
-        return getNumberList(key, Number::intValue, def);
-    }
-
-    @Override
-    public Object putInt(String key, int value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putIntList(String key, List<Integer> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public long getLong(String key, long def) {
-        var v = get(key);
-        if (v == null) return def;
-        if (v instanceof Number n) return n.longValue();
-        return def;
-    }
-
-    @Override
-    public long getLong(String key) {
-        return getLong(key, 0L);
-    }
-
-    @Override
-    public List<Long> getLongList(String key, List<Long> def) {
-        return getNumberList(key, Number::longValue, def);
-    }
-
-    @Override
-    public Object putLong(String key, long value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putLongList(String key, List<Long> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public float getFloat(String key, float def) {
-        var v = get(key);
-        if (v == null) return def;
-        if (v instanceof Number n) return n.floatValue();
-        return def;
-    }
-
-    @Override
-    public float getFloat(String key) {
-        return getFloat(key, 0);
-    }
-
-    @Override
-    public List<Float> getFloatList(String key, List<Float> def) {
-        return getNumberList(key, Number::floatValue, def);
-    }
-
-    @Override
-    public Object putFloat(String key, float value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putFloatList(String key, List<Float> value) {
-        return put(key, value);
-    }
-
-    @Override
-    public double getDouble(String key, double def) {
-        var v = get(key);
-        if (v == null) return def;
-        if (v instanceof Number n) return n.doubleValue();
-        return def;
-    }
-
-    @Override
-    public double getDouble(String key) {
-        return getDouble(key, 0);
-    }
-
-    @Override
-    public List<Double> getDoubleList(String key, List<Double> def) {
-        return getNumberList(key, Number::doubleValue, def);
-    }
-
-    @Override
-    public Object putDouble(String key, double value) {
-        return put(key, value);
-    }
-
-    @Override
-    public Object putDoubleList(String key, List<Double> value) {
-        return put(key, value);
+        return putValue(key, value);
     }
 
 }

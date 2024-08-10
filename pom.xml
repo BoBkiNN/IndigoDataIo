@@ -5,34 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xyz.bobkinn</groupId>
-    <artifactId>indigodataio</artifactId>
-    <version>2.0.0</version>
+    <artifactId>indigodataio-parent</artifactId>
+    <version>3.0.0</version>
+    <packaging>pom</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>core</module>
+        <module>indigodataio-gson</module>
+    </modules>
 
     <distributionManagement>
         <repository>
@@ -67,7 +47,7 @@
                 <executions>
                     <execution>
                         <id>default-deploy</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>deploy</goal>
                         </goals>

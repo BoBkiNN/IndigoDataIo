@@ -2,6 +2,7 @@ package xyz.bobkinn.indigodataio.gson;
 
 import com.google.gson.JsonPrimitive;
 import org.junit.Test;
+import xyz.bobkinn.indigodataio.ops.MapOps;
 
 import java.util.Arrays;
 import java.util.List;
@@ -58,6 +59,11 @@ public class TestGson {
         System.out.println(map);
         var maps2 = map.getMapArray("ls");
         System.out.println(Arrays.toString(maps2));
+        map.putBoolean("b", true);
+
+        System.out.println("Converting "+map);
+        var converted = GsonOps.INSTANCE.convertMap(MapOps.INSTANCE, map.getRaw());
+        System.out.println("converted = " + converted);
     }
 
     @Test

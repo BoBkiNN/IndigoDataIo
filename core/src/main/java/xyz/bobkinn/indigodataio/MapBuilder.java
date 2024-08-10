@@ -38,7 +38,7 @@ public class MapBuilder<T extends DataHolder<T, P>, P> {
      * @return builder on this level
      */
     public MapBuilder<T, P> put(String key, P value){
-        holder.put(key, value);
+        holder.putValue(key, value);
         return this;
     }
 
@@ -49,7 +49,7 @@ public class MapBuilder<T extends DataHolder<T, P>, P> {
      * @return builder on this level
      */
     public MapBuilder<T, P> put(String key, Number value){
-        holder.put(key, numberConv.apply(value));
+        holder.putValue(key, numberConv.apply(value));
         return this;
     }
 
@@ -60,7 +60,7 @@ public class MapBuilder<T extends DataHolder<T, P>, P> {
      * @return builder on this level
      */
     public MapBuilder<T, P> put(String key, Boolean value){
-        holder.put(key, boolConv.apply(value));
+        holder.putValue(key, boolConv.apply(value));
         return this;
     }
 
@@ -71,7 +71,7 @@ public class MapBuilder<T extends DataHolder<T, P>, P> {
      * @return builder on this level
      */
     public MapBuilder<T, P> put(String key, String value){
-        holder.put(key, strConv.apply(value));
+        holder.putValue(key, strConv.apply(value));
         return this;
     }
 
