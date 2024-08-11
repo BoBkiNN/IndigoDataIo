@@ -5,16 +5,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import xyz.bobkinn.indigodataio.DataHolder;
+import xyz.bobkinn.indigodataio.AbstractDataHolder;
 import xyz.bobkinn.indigodataio.MapBuilder;
-import xyz.bobkinn.indigodataio.Pair;
 import xyz.bobkinn.indigodataio.ops.TypeOps;
 
 import java.util.*;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public class GsonData implements DataHolder<GsonData, JsonElement> {
+public class GsonData extends AbstractDataHolder<GsonData, JsonElement, JsonObject> {
     @NonNull
     private final JsonObject data;
 
@@ -29,6 +28,22 @@ public class GsonData implements DataHolder<GsonData, JsonElement> {
     @Override
     public GsonData getNew() {
         return new GsonData();
+    }
+
+    @Override
+    public JsonObject getNewRaw() {
+        return new JsonObject();
+    }
+
+    @Override
+    public GsonData getNewRaw(JsonObject data) {
+        return new GsonData(data);
+    }
+
+    @NotNull
+    @Override
+    public Set<Entry<String, JsonElement>> entrySet() {
+        return data.entrySet();
     }
 
     @Override
@@ -49,7 +64,7 @@ public class GsonData implements DataHolder<GsonData, JsonElement> {
         if (containsSection(key)) {
             root = getSection(key);
         } else {
-            root = new GsonData();
+            root = getNew();
             putSection(key, root);
         }
         return new MapBuilder<>(null, root, GsonData::new,
@@ -65,21 +80,8 @@ public class GsonData implements DataHolder<GsonData, JsonElement> {
         return data;
     }
 
-    /**
-     * @param key full key
-     * @return left - map key, right - key inside map
-     */
-    @Contract("_ -> new")
-    private @NotNull Pair<String, String> extractMapKey(@NotNull String key) {
-        int i = key.lastIndexOf(".");
-        if (i == -1) return Pair.of("", key);
-        var l = key.substring(0, i);
-        var r = key.substring(i + 1);
-        return Pair.of(l, r);
-    }
-
     @Contract("_, true -> !null")
-    private JsonObject resolveMap(@NotNull String key, boolean create) {
+    protected JsonObject resolveMap(@NotNull String key, boolean create) {
         var ret = data;
         for (String k : key.split("\\.")) {
             if (k.isEmpty()) return ret;
@@ -88,7 +90,7 @@ public class GsonData implements DataHolder<GsonData, JsonElement> {
             if (ret.has(k)) {
                 o = ret.get(k);
             } else if (create) {
-                o = new JsonObject();
+                o = getNewRaw();
                 ret.add(k, o);
             } else {
                 return null;
@@ -265,7 +267,7 @@ public class GsonData implements DataHolder<GsonData, JsonElement> {
         var arr = getType(key, JsonArray.class);
         if (arr == null) return def;
         List<GsonData> ls = new ArrayList<>(arr.size());
-        arr.asList().forEach(e -> ls.add(new GsonData(e.getAsJsonObject())));
+        arr.asList().forEach(e -> ls.add(getNewRaw(e.getAsJsonObject())));
         return ls;
     }
 

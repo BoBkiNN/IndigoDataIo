@@ -10,7 +10,7 @@ import xyz.bobkinn.indigodataio.ops.TypeOps;
 import java.util.*;
 
 @RequiredArgsConstructor
-public class NestedKeyMap extends AbstractMap<String, Object> implements DataHolder<NestedKeyMap, Object>{
+public class NestedKeyMap extends AbstractDataHolder<NestedKeyMap, Object, Map<String, Object>>{
     @NonNull // to generate check
     private final @NotNull Map<String, Object> data;
 
@@ -32,6 +32,16 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
     }
 
     @Override
+    public Map<String, Object> getNewRaw() {
+        return new HashMap<>();
+    }
+
+    @Override
+    public NestedKeyMap getNewRaw(Map<String, Object> data) {
+        return new NestedKeyMap(data);
+    }
+
+    @Override
     public TypeOps<Object> getOps() {
         return MapOps.INSTANCE;
     }
@@ -49,7 +59,7 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
         if (containsSection(key)) {
             root = getSection(key);
         } else {
-            root = new NestedKeyMap();
+            root = getNew();
             putSection(key, root);
         }
         return new MapBuilder<>(null, root, NestedKeyMap::new,
@@ -63,7 +73,7 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
 
     @Contract("_, true -> !null")
     @SuppressWarnings("unchecked")
-    private Map<String, Object> resolveMap(@NotNull String key, boolean create) {
+    protected Map<String, Object> resolveMap(@NotNull String key, boolean create) {
         var ret = data;
         for (String k : key.split("\\.")) {
             if (k.isEmpty()) return ret;
@@ -72,7 +82,7 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
             if (ret.containsKey(k)) {
                 o = ret.get(k);
             } else if (create) {
-                o = new HashMap<String, Object>();
+                o = getNewRaw();
                 ret.put(k, o);
             } else {
                 return null;
@@ -84,19 +94,6 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
             }
         }
         return ret;
-    }
-
-    /**
-     * @param key full key
-     * @return left - map key, right - key inside map
-     */
-    @Contract("_ -> new")
-    private @NotNull Pair<String, String> extractMapKey(@NotNull String key) {
-        int i = key.lastIndexOf(".");
-        if (i == -1) return Pair.of("", key);
-        var l = key.substring(0, i);
-        var r = key.substring(i + 1);
-        return Pair.of(l, r);
     }
 
     private static void checkEmptyKey(String key){
@@ -183,11 +180,6 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
     }
 
     @Override
-    public Object put(String key, Object value) {
-        return DataHolder.super.put(key, value);
-    }
-
-    @Override
     public Object putValue(String key, Object value) {
         if (value instanceof NestedKeyMap){
             throw new IllegalArgumentException("Use putSection to put NestedKeyMap");
@@ -218,7 +210,7 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
     public List<NestedKeyMap> getSectionList(String key, List<NestedKeyMap> def) {
         var ls = getMapList(key);
         if (ls == null) return def;
-        return ls.stream().map(NestedKeyMap::new).toList();
+        return ls.stream().map(this::getNewRaw).toList();
     }
 
     @Override
@@ -228,13 +220,8 @@ public class NestedKeyMap extends AbstractMap<String, Object> implements DataHol
 
     @Override
     public Object putSectionList(String key, List<NestedKeyMap> value) {
-        Object old;
-        if (value == null) {
-            old = putValue(key, null);
-        } else {
-            old = putValue(key, value.stream().map(NestedKeyMap::getRaw).toList());
-        }
-        return old;
+        if (value == null) return putValue(key, null);
+        return putValue(key, value.stream().map(NestedKeyMap::getRaw).toList());
     }
 
     @Override

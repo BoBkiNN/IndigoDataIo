@@ -7,17 +7,18 @@
     <parent>
         <groupId>xyz.bobkinn</groupId>
         <artifactId>indigodataio-parent</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
     </parent>
 
     <groupId>xyz.bobkinn.indigodataio</groupId>
-    <artifactId>gson</artifactId>
+    <artifactId>indigodataio-gson</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>xyz.bobkinn</groupId>
             <artifactId>indigodataio</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

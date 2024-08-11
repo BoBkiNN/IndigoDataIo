@@ -105,13 +105,12 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
 
     /**
      * Puts java value in this map
+     * @implSpec {@link MapOps} ops must be used
      * @param key key
      * @param value value that can be converted using {@link MapOps#convertTo(TypeOps, Object)}
      * @return previous value
      */
-    default P put(String key, Object value){
-        return putValue(key, MapOps.INSTANCE.convertTo(getOps(), value));
-    }
+    P put(String key, Object value);
 
     /**
      * Puts type value that extends P. When P is Object then {@link #put(String, Object)} is recommended.
