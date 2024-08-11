@@ -40,7 +40,7 @@ Gson artifact: Provides support for gson library and `GsonOps` with `GsonData` a
 ```xml
 <dependency>
     <groupId>com.github.BoBkiNN.IndigoDataIo</groupId>
-    <artifactId>gson</artifactId>
+    <artifactId>indigodataio-gson</artifactId>
     <version>VERSION</version>
 </dependency>
 ```
