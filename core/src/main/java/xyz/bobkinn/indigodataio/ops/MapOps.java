@@ -114,12 +114,36 @@ public class MapOps implements TypeOps<Object> {
     }
 
     @Override
-    public Optional<Object> mergeToList(Object list, Object value) {
+    public Optional<Object> mergeToList(Object input, Object value) {
+        if (input == empty()) {
+            return Optional.of(List.of(value));
+        }
+        if (input instanceof final List<?> list) {
+            if (list.isEmpty()) {
+                return Optional.of(List.of(value));
+            }
+            List<Object> ls = new ArrayList<>(list);
+            ls.add(value);
+            return Optional.of(List.of(ls));
+        }
         return Optional.empty();
     }
 
     @Override
-    public Optional<Object> mergeToMap(Object map, Object key, Object value) {
+    public Optional<Object> mergeToMap(Object input, Object key, Object value) {
+        if (input == empty()) {
+            return Optional.of(Map.of(key, value));
+        }
+        if (input instanceof final Map<?, ?> map) {
+            if (map.isEmpty()) {
+                return Optional.of(Map.of(key, value));
+            }
+
+            final Map<Object, Object> result = new HashMap<>(map.size() + 1);
+            result.putAll(map);
+            result.put(key, value);
+            return Optional.of(Collections.unmodifiableMap(result));
+        }
         return Optional.empty();
     }
 
@@ -183,7 +207,7 @@ public class MapOps implements TypeOps<Object> {
 
     @Override
     public Optional<Stream<Object>> getStream(Object input) {
-        if (input instanceof List<?> ls) {
+        if (input instanceof Collection<?> ls) {
             return Optional.of(ls.stream().map(o -> o));
         }
         return Optional.empty();

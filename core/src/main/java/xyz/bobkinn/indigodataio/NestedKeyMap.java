@@ -174,8 +174,8 @@ public class NestedKeyMap extends AbstractDataHolder<NestedKeyMap, Object, Map<S
     @Override
     public List<?> getList(String key, List<?> def) {
         var o = get(key, def);
-        if (o instanceof List<?> ls){
-            return ls;
+        if (o instanceof Collection<?> ls){
+            return new ArrayList<>(ls);
         } else return def;
     }
 
@@ -210,7 +210,7 @@ public class NestedKeyMap extends AbstractDataHolder<NestedKeyMap, Object, Map<S
     public List<NestedKeyMap> getSectionList(String key, List<NestedKeyMap> def) {
         var ls = getMapList(key);
         if (ls == null) return def;
-        return ls.stream().map(this::getNewRaw).toList();
+        return ls.stream().map(this::getNewRaw).collect(TypeOps.toArrayList());
     }
 
     @Override
@@ -245,7 +245,7 @@ public class NestedKeyMap extends AbstractDataHolder<NestedKeyMap, Object, Map<S
         var v = get(key, def);
         try {
             //noinspection unchecked
-            return (List<Map<String, Object>>) v;
+            return new ArrayList<>((List<Map<String, Object>>) v);
         } catch (ClassCastException ignored){
             return def;
         }

@@ -3,10 +3,7 @@ package xyz.bobkinn.indigodataio;
 import xyz.bobkinn.indigodataio.ops.MapOps;
 import xyz.bobkinn.indigodataio.ops.TypeOps;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Main interface for data holders.<br>
@@ -34,7 +31,7 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
     @SafeVarargs
     static <T> List<T> toList(T... array){
         if (array == null) return null;
-        return List.of(array);
+        return new ArrayList<>(List.of(array));
     }
 
     @SuppressWarnings("unchecked")

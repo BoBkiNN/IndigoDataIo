@@ -3,6 +3,7 @@ package map;
 import org.junit.Test;
 import xyz.bobkinn.indigodataio.NestedKeyMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,17 @@ public class MapTest {
         System.out.println(map);
         var maps2 = map.getMapArray("ls");
         System.out.println(Arrays.toString(maps2));
+    }
+
+    @Test
+    public void testLists(){
+        var map = new NestedKeyMap();
+        map.putIntList("i", List.of(1231, 123123, 123123));
+        map.putStringList("s", List.of("asdasd", "asdasdasd", "ieiei"));
+        map.putMapList("m", List.of(Map.of("k1", 234, "k2", "234")));
+        assert map.getIntList("i").getClass() == ArrayList.class;
+        assert map.getStringList("s").getClass() == ArrayList.class;
+        assert map.getSectionList("m").getClass() == ArrayList.class;
     }
 
     @Test

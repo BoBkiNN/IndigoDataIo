@@ -12,9 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 /**
  * Class that provides conversations between data types. Based on DynamicOps from Mojang/DataFixerUpper
@@ -182,13 +180,21 @@ public interface TypeOps<T> {
 
     T createArray(T[] input);
 
+    static <A> Collector<A, ?, ArrayList<A>> toArrayList(){
+        return Collectors.toCollection(ArrayList::new);
+    }
+
+    static <A> ArrayList<A> toArrayList(Stream<A> stream){
+        return stream.collect(toArrayList());
+    }
+
     // string lists
 
     default Optional<List<String>> getStringList(final T input){
         return getStream(input).flatMap(stream -> {
             final List<T> list = stream.toList();
             if (list.stream().allMatch(element -> getString(element).isPresent())) {
-                return Optional.of(list.stream().map(e -> getString(e).orElseThrow()).toList());
+                return Optional.of(list.stream().map(e -> getString(e).orElseThrow()).collect(toArrayList()));
             }
             return Optional.empty();
         });
@@ -212,7 +218,7 @@ public interface TypeOps<T> {
         return getStream(input).flatMap(stream -> {
             final List<T> list = stream.toList();
             if (list.stream().allMatch(element -> getBoolean(element).isPresent())) {
-                return Optional.of(list.stream().map(e -> getBoolean(e).orElseThrow()).toList());
+                return Optional.of(list.stream().map(e -> getBoolean(e).orElseThrow()).collect(toArrayList()));
             }
             return Optional.empty();
         });
@@ -361,7 +367,7 @@ public interface TypeOps<T> {
     }
 
     default Optional<List<Long>> getLongList(final T input) {
-        return getLongStream(input).map(LongStream::boxed).map(Stream::toList);
+        return getLongStream(input).map(LongStream::boxed).map(TypeOps::toArrayList);
     }
 
     default T createLongStream(final LongStream input) {

@@ -299,7 +299,7 @@ public class GsonData extends AbstractDataHolder<GsonData, JsonElement, JsonObje
         if (arr == null) return def;
         var a = arr.asList();
         if (a.stream().allMatch(JsonElement::isJsonObject)){
-            return a.stream().map(JsonElement::getAsJsonObject).map(JsonObject::asMap).toList();
+            return a.stream().map(JsonElement::getAsJsonObject).map(JsonObject::asMap).collect(TypeOps.toArrayList());
         }
         return def;
     }
