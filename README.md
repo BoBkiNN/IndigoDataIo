@@ -9,7 +9,7 @@ src="https://img.shields.io/github/v/release/BoBkiNN/IndigoDataIO">
 ## IndigoDataIo
 
 This is library that adds a new way to manipulate keyed map-like data.
-keys are like `inside.some.object.value` so there are no
+Keys is path like `inside.some.object.value` that will be used to get `value` from deep object.
 
 Since version 3.0.0 TypeOps interface was introduced.
 This interface adds methods to create types for serialization.
