@@ -44,4 +44,8 @@ Gson artifact: Provides support for gson library and `GsonOps` with `GsonData` a
     <version>VERSION</version>
 </dependency>
 ```
+---
+
+TODO:
+* object that holds dataholder without generics
 
