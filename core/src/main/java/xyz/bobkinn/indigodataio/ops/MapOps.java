@@ -114,6 +114,15 @@ public class MapOps implements TypeOps<Object> {
     }
 
     @Override
+    public Optional<Boolean> getBoolean(Object input) {
+        if (input instanceof Boolean b){
+            return Optional.of(b);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public Optional<Object> mergeToList(Object input, Object value) {
         if (input == empty()) {
             return Optional.of(List.of(value));

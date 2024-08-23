@@ -70,6 +70,13 @@ public class GsonOps implements TypeOps<JsonElement> {
     }
 
     @Override
+    public Optional<Boolean> getBoolean(JsonElement input) {
+        if (input instanceof JsonPrimitive p && p.isBoolean()) {
+            return Optional.of(p.getAsBoolean());
+        } else return Optional.empty();
+    }
+
+    @Override
     public Optional<String> getString(JsonElement input) {
         if (input instanceof JsonPrimitive p && p.isString()) {
             return Optional.of(p.getAsString());
