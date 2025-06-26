@@ -28,6 +28,24 @@ import java.util.*;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface DataHolder<T extends DataHolder<T, P>, P> {
 
+    /**
+     * Creates another DataHolder with values of this
+     * @param to other instance of DataHolder
+     * @return new instance of other DataHolder with values
+     * @param <TO> type of other DataHolder
+     * @param <TP> type of top value in other DataHolder (like JsonElement)
+     */
+    default <TO extends DataHolder<TO, TP>, TP> TO convertTo(TO to) {
+        var otherOps = to.getOps();
+        var selfOps = this.getOps();
+        for (var key : this.keys()) {
+            var sv = this.get(key);
+            var ov = selfOps.convertTo(otherOps, sv);
+            to.putValue(key, ov);
+        }
+        return to;
+    }
+
     @SafeVarargs
     static <T> List<T> toList(T... array){
         if (array == null) return null;

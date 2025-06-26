@@ -2,6 +2,7 @@ package xyz.bobkinn.indigodataio.gson;
 
 import com.google.gson.JsonPrimitive;
 import org.junit.Test;
+import xyz.bobkinn.indigodataio.NestedKeyMap;
 import xyz.bobkinn.indigodataio.ops.MapOps;
 
 import java.util.Arrays;
@@ -83,5 +84,23 @@ public class TestGson {
         map.putLong("l", 5L);
         var d = map.getDouble("d");
         assert d == 4.0d;
+    }
+
+    @Test
+    public void testConvert() {
+        var km = NestedKeyMap.newBuilder()
+                .put("n",  (Integer) null)
+                .put("s", "asdasd")
+                .put("f", 3.3f)
+                .put("d", 2.2d)
+                .put("l", 5000L)
+                .down("sasd")
+                    .put("s2", "asds")
+                    .up()
+                .build();
+        System.out.println(km);
+        var gd = km.convertTo(new GsonData());
+        System.out.println(gd);
+        assert (km.getFloat("f") == 3.3f) && gd.getFloat("f") == 3.3f;
     }
 }
