@@ -34,6 +34,7 @@ public interface DataHolder<T extends DataHolder<T, P>, P> {
      * @return new instance of other DataHolder with values
      * @param <TO> type of other DataHolder
      * @param <TP> type of top value in other DataHolder (like JsonElement)
+     * @since 3.0.5
      */
     default <TO extends DataHolder<TO, TP>, TP> TO convertTo(TO to) {
         var otherOps = to.getOps();
