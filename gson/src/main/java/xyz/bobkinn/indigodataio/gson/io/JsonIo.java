@@ -34,6 +34,7 @@ public class JsonIo {
             .create();
 
     private static void createParentFolder(File folder){
+        if (folder == null) return;
         if (!folder.isDirectory()) if (!folder.mkdirs()) throw new IllegalStateException("Failed to create folder "+folder);
     }
 
