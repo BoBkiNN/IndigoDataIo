@@ -25,7 +25,7 @@ public class JsonIo {
             if (json instanceof JsonObject o){
                 return new GsonData(o);
             }
-            throw new JsonParseException("Json elements is not object");
+            throw new JsonParseException("JsonElement must be JsonObject to construct GsonData");
         }
     }
 
