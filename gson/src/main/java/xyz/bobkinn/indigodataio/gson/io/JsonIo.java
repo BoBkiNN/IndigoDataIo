@@ -38,7 +38,7 @@ public class JsonIo {
     }
 
     public static void write(GsonData data, File to, WriterOptions options){
-        createParentFolder(to);
+        createParentFolder(to.getParentFile());
         try (var wr = new JsonWriter(new BufferedWriter(new FileWriter(to, options.getCharset())))) {
             options.apply(wr);
             GSON.toJson(data, GsonData.class, wr);
